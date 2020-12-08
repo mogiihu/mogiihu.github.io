@@ -109,9 +109,9 @@
       
         <tags>
             
-            <tag> 前端 </tag>
-            
             <tag> 小程序 </tag>
+            
+            <tag> 前端 </tag>
             
             <tag> Taro </tag>
             
@@ -167,9 +167,9 @@
       
         <tags>
             
-            <tag> 前端 </tag>
-            
             <tag> 小程序 </tag>
+            
+            <tag> 前端 </tag>
             
             <tag> Taro </tag>
             
@@ -196,9 +196,9 @@
       
         <tags>
             
-            <tag> 前端 </tag>
-            
             <tag> 小程序 </tag>
+            
+            <tag> 前端 </tag>
             
             <tag> Taro </tag>
             
@@ -212,8 +212,8 @@
     
     <entry>
       <title>深入学习HTTP协议(2)-HTTP基本概念</title>
-      <link href="posts/%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0HTTP%E5%8D%8F%E8%AE%AE(2)-HTTP%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/"/>
-      <url>posts/%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0HTTP%E5%8D%8F%E8%AE%AE(2)-HTTP%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/</url>
+      <link href="posts/%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0HTTP%E5%8D%8F%E8%AE%AE(2)-HTTP%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/"/>
+      <url>posts/%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0HTTP%E5%8D%8F%E8%AE%AE(2)-HTTP%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/</url>
       
         <content type="html"><![CDATA[<blockquote><p>身为一个前端，HTTP 对我而言就像是云雾环绕的一座山，看不透也不知从哪开始攀登。深入学习 HTTP 协议系列就是我对罗剑锋老师的<a href="http://gk.link/a/10mzW">《透视 HTTP 协议》</a>所做的总结。希望能对大家的登山之旅有所帮助。</p></blockquote><h2 id="当我们在浏览器地址栏输入网址再按下回车发生了什么？"><a href="#当我们在浏览器地址栏输入网址再按下回车发生了什么？" class="headerlink" title="当我们在浏览器地址栏输入网址再按下回车发生了什么？"></a>当我们在浏览器地址栏输入网址再按下回车发生了什么？</h2><ol><li>浏览器发起域名解析获取地址对应的 IP；</li><li>浏览器用 TCP 的三次握手与服务器建立连接；</li><li>浏览器向服务器发送拼好的报文；</li><li>服务器收到报文后处理请求，同样拼好报文再发给浏览器；</li><li>浏览器解析报文，渲染输出页面。</li></ol><p>域名解析的过程中有多级缓存，浏览器先查看自身缓存，没有再向操作系统缓存要，还没有就检查本机域名解析文件 hosts，最后则会用 DNS 域名解析系统进行。在这个过程中可能会经历 CDN 解析，拿到 CDN 服务器的地址</p><p>在达到目标服务器后，通常会经历负载均衡设备，负载均衡设备会访问系统里的缓存服务器，通常有 memory 级缓存 Redis 和 disk 级缓存 Varnish。</p><p>如果缓存服务器里没有所要数据，就会把请求转发给应用服务器，例如 Java 的 Tomcat/Netty/Jetty，Python 的 Django，还有 PHP、Node.js、Golang 等等。然应用服务器处理完成后把执行的结果返回给负载均衡设备。</p><p>到达负载均衡后请求的处理就完成了，会按照请求顺序原路返回。</p><h2 id="HTTP-协议的核心部分-HTTP-报文"><a href="#HTTP-协议的核心部分-HTTP-报文" class="headerlink" title="HTTP 协议的核心部分 - HTTP 报文"></a>HTTP 协议的核心部分 - HTTP 报文</h2><h3 id="报文结构"><a href="#报文结构" class="headerlink" title="报文结构"></a>报文结构</h3><p>HTTP 协议的请求报文和响应报文的结构由三大部分组成</p><ol><li>起始行（start line）：描述请求或相应的基本信息；</li><li>头部字段集合（header）：key-value 的形式；</li><li>消息正文（entity）：实际传输数据。</li></ol><p>其中前两部分经常被称为 <strong>请求头/响应头</strong>，正文部分称为<strong>body</strong>。</p><p>HTTP 协议规定报文必须有 header，可以没有 body，在 header 和 body 之间必须有一个空行，如下图所示。</p><p><img src="./img1.png" alt="报文结构"></p><h3 id="抓包分析"><a href="#抓包分析" class="headerlink" title="抓包分析"></a>抓包分析</h3><p><img src="./img2.png" alt="抓包分析"></p><p>图中 1，第一行为请求行部分。2，为 header 部分，3 是空白行部分。这里没有发送 body，所以没有 body 信息。</p><h3 id="请求行"><a href="#请求行" class="headerlink" title="请求行"></a>请求行</h3><p>报文的起始行就是请求行，它简要的描述了客户端想要如何操作服务器端的资源。</p><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET / HTTP / <span class="number">1.1</span>;</span><br></pre></td></tr></table></figure><p>在抓包获取的信息中，我们可以看到请求头由三部分组成：</p><ol><li>请求方法，表示对资源的操作，对应上面代码中的 GET，；</li><li>请求目标，通常是一个 URI，表记录请求方法要操作的资源，对应 <code>/</code>；</li><li>版本号：表示报文使用的 HTTP 协议版本，对应 <code>HTTP/1.1</code>。</li></ol><p>这三个部分通常用空格来分隔，最后用 CRLF 换行表示结束，用图片来描述就是下面这个方式。</p><p><img src="./img3.png" alt="请求行"></p><h3 id="状态行"><a href="#状态行" class="headerlink" title="状态行"></a>状态行</h3><p>服务器响应报文里的起始行叫做<strong>状态行</strong>，表示<strong>服务器响应的状态</strong>。</p><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/<span class="number">1.1</span> <span class="number">200</span> OK</span><br><span class="line">HTTP/<span class="number">1.1</span> <span class="number">404</span> Not Found</span><br></pre></td></tr></table></figure><p>也由三部分组成：</p><ol><li>版本号，表示报文使用的 HTTP 协议版本号；</li><li>状态码，表示处理结果，如 200 成功，500 服务器错误；</li><li>原因：作为数字状态码的补充，在上面代码是 <code>OK</code>。</li></ol><p>它的组成规则和请求行一致，用空格来分隔，用 CRLF 换行表示结束，如下图所示。</p><p><img src="./img4.png" alt="状态行"></p><h3 id="头部字段（header）"><a href="#头部字段（header）" class="headerlink" title="头部字段（header）"></a>头部字段（header）</h3><p>请求行/状态行加上头部字段（header），就组成了请求头/响应头。<br>如下图所示：</p><p><img src="./img5.png" alt="请求头/响应头"></p><p>头部字段是 key-value 的形式，之间用 <code>：</code> 分隔，最后用 CRLF 换行表示结束。</p><p>注意：</p><ol><li>字段不区分大小写，不允许出现下划线<code>_</code>，可以使用短横线<code>-</code>连接。</li><li>key 后面紧跟<code>:</code>，不能有空格。但是<code>:</code>和 value 之间可以出现空格。</li><li>字段的顺序是无意义的。</li><li>字段原则上不能出现重复，除非字段本身语义允许，如 Set-Cookie。</li><li>在请求头/响应头中只有 <code>Host</code> 字段是必须的。</li></ol><h2 id="HTTP-请求方法"><a href="#HTTP-请求方法" class="headerlink" title="HTTP 请求方法"></a>HTTP 请求方法</h2><h3 id="标准请求方法"><a href="#标准请求方法" class="headerlink" title="标准请求方法"></a>标准请求方法</h3><ol><li>GET：获取资源，可以理解为读取或者下载数据；</li><li>HEAD：获取资源的元信息；POST：向资源提交数据，相当于写入或上传数据；</li><li>PUT：类似 POST；DELETE：删除资源；</li><li>CONNECT：建立特殊的连接隧道；</li><li>OPTIONS：列出可对资源实行的方法；</li><li>TRACE：追踪请求 - 响应的传输路径。</li></ol><p><img src="./img6.png" alt="请求分类"></p><h3 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h3><h4 id="GET-和-HEAD"><a href="#GET-和-HEAD" class="headerlink" title="GET 和 HEAD"></a>GET 和 HEAD</h4><p>GET 的含义是<strong>从服务器获取资源</strong>，可以搭配 URI 和其他头部字段实现对资源更精细的操作。</p><p>HEAD 的含义与 GET 类似，都是<strong>从服务器获取资源</strong>，服务器处理机制也一样，但服务器不会返回请求的实体数据，只会传回响应头，也就是资源的“元信息”。可以将他看做 GET 的简化版。</p><h4 id="POST-和-PUT"><a href="#POST-和-PUT" class="headerlink" title="POST 和 PUT"></a>POST 和 PUT</h4><p>POST 和 PUT 是指<strong>向 URI 指定资源提交数据</strong>，而 POST 和 PUT 的区别在于 POST 意味着“新建”，PUT 则是 “修改”。</p><h3 id="其他方法"><a href="#其他方法" class="headerlink" title="其他方法"></a>其他方法</h3><p>DELETE：指示服务器删除资源。<br>CONNECT：要求服务器为客户端和另一台远程服务器建立一条通道，浏览器充当代理角色。<br>OPTIONS：要求服务器列出可对资源实行的请求方法。<br>TRACE：用于对 HTTP 链路的测试或诊断。</p><h3 id="安全和幂等"><a href="#安全和幂等" class="headerlink" title="安全和幂等"></a>安全和幂等</h3><p><strong>安全</strong>在 HTTP 协议里是指请求方法不会修改服务器上的资源。所以只有 GET 和 HEAD 是安全的，因为它们对资源进行是只读操作。</p><p><strong>幂等</strong>意思是多次执行相同操作，结果也都是相同的，即多次“幂”后“相等”。</p><p>可以看出 GET 和 HEAD 既是安全的也是幂等的，DELETE 是幂等的，POST 和 PUT 既不安全也不幂等。</p><h2 id="URI-与-网址"><a href="#URI-与-网址" class="headerlink" title="URI 与 网址"></a>URI 与 网址</h2><p>URI：<strong>统一资源标识符</strong>，包括 URL 和 URN 两部分。<br>URL：<strong>统一资源定位符</strong>，就是我们俗称的“网络地址”，因为 URL 十分普遍，所以通常用 URL 表示 URL 或 URI。</p><h3 id="URL-格式"><a href="#URL-格式" class="headerlink" title="URL 格式"></a>URL 格式</h3><p>URL 本质上是一个字符串，它的作用是 唯一的标记资源的位置或者名字。它不仅能标记万维网资源，还能标记动态服务资源或者本地资源。</p><p>它的组成部分如下图所示：由 scheme、host:port、path 和 query 组成。</p><p><img src="./img7.png" alt="URL 格式"></p><p>URI 的第一个组成部分是 <strong>scheme</strong> 代表协议名，表示资源应该用那种协议访问（如：http、ftp、file）。</p><p>scheme 之后就是固定的三个字符“**://**”，用来把 scheme 和后面的部分分离开。</p><p>“**://<strong>”之后是 **authority</strong> 部分，表示<strong>资源所在的主机名</strong>，通常形式是 host:port ，即主机名加端口号。主机名必须要有，可以是 IP 地址或域名。端口号可以省略，浏览器等客户端会根据 scheme 使用默认的端口号，例如 HTTP 默认的是 80，HTTPS 默认的是 443。</p><p><strong>path</strong> 是用来<strong>标记资源所在位置</strong>。path 采用的是类似路径的表示方式，URI 的 path 必须要以 “/” 开始。</p><p>看下面这个例子</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;tools.ietf.org&#x2F;html&#x2F;rfc7230</span><br></pre></td></tr></table></figure><p><code>https</code> 是 scheme，表示使用的是 <code>https</code> 协议，<code>tools.ietf.org</code> 就是主机名，这里默认访问端口号是 443，路径就是后面的 <code>/html/rfc7230</code>。</p><h3 id="URI-的查询参数-query"><a href="#URI-的查询参数-query" class="headerlink" title="URI 的查询参数 query"></a>URI 的查询参数 query</h3><p>在上图 URL path 后还有一个 <strong>query</strong> 部分，query 由一个“?”开始，但不包含“?”，表示对资源附加的额外要求。</p><p>query 的格式是由 多个 “key=value” 组成，多个 “key=value” 之间用 “&amp;” 连接。</p><h3 id="URI-的编码"><a href="#URI-的编码" class="headerlink" title="URI 的编码"></a>URI 的编码</h3><p>URI 中只能使用 ASCII 码，对于英语以外的汉语、日语及其他字符 URI 会对他们进行 encodeURI 转义。</p><p>转义规则是，把字符（unicode）编码成 utf-8，utf-8 是用 1-4 个字节表示的，所以每个字节转换成 16 进制并在前面用百分号（%）连接，最后并把每个字节转换的结果连接起来。</p><h2 id="响应状态码"><a href="#响应状态码" class="headerlink" title="响应状态码"></a>响应状态码</h2><h3 id="五类状态码"><a href="#五类状态码" class="headerlink" title="五类状态码"></a>五类状态码</h3><p>RFC 标准把状态码分成了以下五类</p><ul><li>1××：提示信息，表示目前是协议处理的中间状态，还需要后续的操作；</li><li>2××：成功，报文已经收到并被正确处理；</li><li>3××：重定向，资源位置发生变动，需要客户端重新发送请求；</li><li>4××：客户端错误，请求报文有误，服务器无法处理；</li><li>5××：服务器错误，服务器在处理请求时内部发生了错误。</li></ul><h3 id="常见响应状态码及含义"><a href="#常见响应状态码及含义" class="headerlink" title="常见响应状态码及含义"></a>常见响应状态码及含义</h3><ul><li>1xx<ul><li><strong>101 Switching Protocols</strong>，客户端要求服务端改成其他协议继续通信，如果服务器统一变更协议，就会返回状态码 101.</li></ul></li><li>2xx<ul><li><strong>200 OK</strong>，表示请求成功，通常在响应头后会有 body 数据。</li><li><strong>204 No Content</strong>，也表示请求成功，它与 200 的区别在于，响应头后没有 body 数据。</li><li><strong>206 Partial Content</strong>，常见于获取请求资源的部分数据。“Content-Range”，表示 body 里返回数据的具体范围。</li></ul></li><li>3xx<ul><li><strong>301 Moved Permanently</strong>，表示永久重定向。</li><li><strong>302 Found</strong>，表示临时重定向，浏览器不会对临时重定向的内容做缓存优化。</li><li><strong>304 Not Modified</strong>，缓存重定向，用户缓存控制，URL 不包含跳转含义。</li></ul></li><li>4xx<ul><li><strong>400 Bad Request</strong>，表示请求错误。</li><li><strong>403 Forbidden</strong>，表示服务器禁止访问资源。</li><li><strong>404 Not Found</strong>，表示资源在服务器上未找到。</li></ul></li><li>5xx<ul><li><strong>500 Internal Server Error</strong>，表示服务器发生错误，是一个较通用的错误码。</li><li><strong>502 Bad Gateway</strong>，表示服务器禁止访问资源。</li><li><strong>503 Service Unavailable</strong>，表示服务器正忙，暂时无法响应。</li></ul></li></ul><h2 id="HTTP-的特点和优缺点"><a href="#HTTP-的特点和优缺点" class="headerlink" title="HTTP 的特点和优缺点"></a>HTTP 的特点和优缺点</h2><h3 id="五大特点"><a href="#五大特点" class="headerlink" title="五大特点"></a>五大特点</h3><ol><li>HTTP 是灵活可扩展的，可以任意添加头字段实现任意功能；</li><li>HTTP 是可靠传输协议，基于 TCP/IP 协议“尽量”保证数据的送达；</li><li>HTTP 是应用层协议，比 FTP、SSH 等更通用功能更多，能够传输任意数据；</li><li>HTTP 使用了请求 - 应答模式，客户端主动发起请求，服务器被动回复请求；</li><li>HTTP 本质上是无状态的，每个请求都是互相独立、毫无关联的，协议不要求客户端或服务器记录请求相关的信息。</li></ol><h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><ul><li><p>优点：</p><ul><li>灵活可拓展；</li><li>应用广泛，环境成熟；</li><li>无状态，不需要额外资源来记录路状态信息，减轻服务器负担；</li><li>明文传输，数据可直接查看到，方便开发调试。</li></ul></li><li><p>缺点：</p><ul><li>无状态，每次访问都要获取一遍身份信息；</li><li>明文传输，数据容易被截取；</li><li>不安全，数据在传输过程中容易被篡改。</li></ul></li></ul>]]></content>
       
@@ -252,9 +252,9 @@
       
         <tags>
             
-            <tag> 前端 </tag>
-            
             <tag> 小程序 </tag>
+            
+            <tag> 前端 </tag>
             
         </tags>
       
@@ -279,13 +279,13 @@
       
         <tags>
             
+            <tag> 小程序 </tag>
+            
             <tag> 前端 </tag>
             
             <tag> 坑 </tag>
             
             <tag> 知识点 </tag>
-            
-            <tag> 小程序 </tag>
             
             <tag> Taro </tag>
             
