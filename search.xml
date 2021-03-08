@@ -4,6 +4,35 @@
   
     
     <entry>
+      <title>解决小程序web-view覆盖原生组件问题</title>
+      <link href="posts/%E8%A7%A3%E5%86%B3%E5%B0%8F%E7%A8%8B%E5%BA%8Fweb-view%E8%A6%86%E7%9B%96%E5%8E%9F%E7%94%9F%E7%BB%84%E4%BB%B6%E9%97%AE%E9%A2%98/"/>
+      <url>posts/%E8%A7%A3%E5%86%B3%E5%B0%8F%E7%A8%8B%E5%BA%8Fweb-view%E8%A6%86%E7%9B%96%E5%8E%9F%E7%94%9F%E7%BB%84%E4%BB%B6%E9%97%AE%E9%A2%98/</url>
+      
+        <content type="html"><![CDATA[<p>在我们开发小程序的过程中经常会需要通过webView打开一个网页，但由于微信小程序官方的设定，每个页面只能有一个 web-view，web-view 会自动铺满整个页面，并覆盖其他组件。<a href="https://developers.weixin.qq.com/miniprogram/dev/component/web-view.html">文档在此~</a><br><img src="./img1.png"></p><p>百度过后通用的建议是使用 cover-view, 然并软，仍然会被覆盖。在产品的强烈要求下绞尽脑汁发掘了以下两种方式来解决 web-view 覆盖原生组件的问题。</p><h4 id="1-改变-web-view-内样式"><a href="#1-改变-web-view-内样式" class="headerlink" title="1. 改变 web-view 内样式"></a>1. 改变 web-view 内样式</h4><p>如果是我们自己开发的 h5 页面，可以预先空出我们要放置原生组件的位置，这样在小程序页面内打开 web-view 时，原生组件可以刚好被暴露出来。不过这种方式比较极端，不适用与大部分场景。下面介绍第二种方式可以更好的解决该问题。</p><h4 id="2-使用-live-player-组件"><a href="#2-使用-live-player-组件" class="headerlink" title="2. 使用 live-player 组件"></a>2. 使用 live-player 组件</h4><p>在开发直播组件的过程中，我发现 <code>live-pusher</code> 和 <code>live-player</code> 组件并不会被 web-view 覆盖，可以在需要显示的组件外面包裹一层 <code>live-pusher</code> 或 <code>live-player</code>。这里推荐使用 <code>live-player</code>，因为一个页面有过多的 <code>live-pusher</code> 会导致小程序页面报错。下面是使用代码：</p><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;live-player&gt;</span><br><span class="line">    &lt;cover-view&gt;</span><br><span class="line">        我不会被覆盖呦</span><br><span class="line">    &lt;/cover-view&gt;</span><br><span class="line">&lt;/live-player&gt;</span><br></pre></td></tr></table></figure><p>不用添加 <code>live-player</code> 的其他属性，直接使用即可。</p><p>最后要注意的是，这两种方式在开发环境下都不会显示原生组件，需要扫码到真机上才能看到哦~</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 小程序 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 前端 </tag>
+            
+            <tag> 小程序 </tag>
+            
+            <tag> Taro </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>用vscode来调试js文件吧</title>
       <link href="posts/%E7%94%A8vscode%E6%9D%A5%E8%B0%83%E8%AF%95js%E6%96%87%E4%BB%B6%E5%90%A7/"/>
       <url>posts/%E7%94%A8vscode%E6%9D%A5%E8%B0%83%E8%AF%95js%E6%96%87%E4%BB%B6%E5%90%A7/</url>
