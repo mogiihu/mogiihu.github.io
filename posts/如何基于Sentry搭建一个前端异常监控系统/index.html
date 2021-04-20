@@ -1,0 +1,346 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>如何基于Sentry搭建一个前端异常监控系统 | mogii's blog</title><meta name="keywords" content="前端,基建"><meta name="author" content="mogii"><meta name="copyright" content="mogii"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="背景虽然在我们的项目运行上会有很多的测试流程，例如自测、提测回归测试及自动化测试。但是测试流程肯定无法保证100%覆盖所有操作场景，所以在用户的使用过程中仍会有一些问题暴露出来。当线上用户出现问题，我们需要收到用户的一个反馈，才能去定位解决，这样导致我们的问题解决不够及时。并且有些疑难杂症，我们无法无线复现定位，这时候我们需要得知用户的环境信息、操作信息等，以便于对问题进行排查。基于以上两点考虑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何基于Sentry搭建一个前端异常监控系统">
+<meta property="og:url" content="http://example.com/posts/%E5%A6%82%E4%BD%95%E5%9F%BA%E4%BA%8ESentry%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%89%8D%E7%AB%AF%E5%BC%82%E5%B8%B8%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="mogii&#39;s blog">
+<meta property="og:description" content="背景虽然在我们的项目运行上会有很多的测试流程，例如自测、提测回归测试及自动化测试。但是测试流程肯定无法保证100%覆盖所有操作场景，所以在用户的使用过程中仍会有一些问题暴露出来。当线上用户出现问题，我们需要收到用户的一个反馈，才能去定位解决，这样导致我们的问题解决不够及时。并且有些疑难杂症，我们无法无线复现定位，这时候我们需要得知用户的环境信息、操作信息等，以便于对问题进行排查。基于以上两点考虑">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/index_img.png">
+<meta property="article:published_time" content="2021-04-20T13:06:49.000Z">
+<meta property="article:modified_time" content="2021-04-20T13:20:45.232Z">
+<meta property="article:author" content="mogii">
+<meta property="article:tag" content="前端">
+<meta property="article:tag" content="基建">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/index_img.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/posts/%E5%A6%82%E4%BD%95%E5%9F%BA%E4%BA%8ESentry%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%89%8D%E7%AB%AF%E5%BC%82%E5%B8%B8%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  hexoversion: '5.2.0',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: mogii","link":"链接: ","source":"来源: mogii's blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: true
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true,
+  postUpdate: '2021-04-20 21:20:45'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {
+  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }
+})()</script><link rel="stylesheet" href="//at.alicdn.com/t/font_2156685_eifqqadxqcn.css"><meta name="generator" content="Hexo 5.2.0"></head><body><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">15</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tag/"><div class="headline">标签</div><div class="length_num">15</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">6</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tag/"><i class="fa-fw fas fa-tag"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/gallery/"><i class="fa-fw fas fa-image"></i><span> 图库</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><div id="sidebar"><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%90%AD%E5%BB%BA"><span class="toc-number">2.</span> <span class="toc-text">异常系统的搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E6%8B%A9Sentry%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">为什么选择Sentry？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sentry-%E7%AE%80%E4%BB%8B"><span class="toc-number">2.2.</span> <span class="toc-text">Sentry 简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sentry-%E9%83%A8%E7%BD%B2%E5%8F%8A%E4%BD%BF%E7%94%A8"><span class="toc-number">2.3.</span> <span class="toc-text">Sentry 部署及使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link"><span class="toc-number">2.3.1.</span> <span class="toc-text"></span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82"><span class="toc-number">2.3.2.</span> <span class="toc-text">环境要求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#-1"><span class="toc-number">2.3.3.</span> <span class="toc-text"></span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2%E6%AD%A5%E9%AA%A4"><span class="toc-number">2.3.4.</span> <span class="toc-text">部署步骤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Sentry-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">2.3.5.</span> <span class="toc-text">Sentry 的使用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%8E%A5%E5%85%A5-Sentry"><span class="toc-number">2.4.</span> <span class="toc-text">小程序接入 Sentry</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-number">2.4.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8"><span class="toc-number">2.4.2.</span> <span class="toc-text">使用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E4%BF%A1%E6%81%AF%E6%8D%95%E6%8D%89%E5%9C%BA%E6%99%AF%E5%8F%8A%E9%87%87%E9%9B%86%E5%86%85%E5%AE%B9"><span class="toc-number">3.</span> <span class="toc-text">异常信息捕捉场景及采集内容</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8D%95%E6%8D%89%E5%9C%BA%E6%99%AF"><span class="toc-number">3.1.</span> <span class="toc-text">捕捉场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%87%E9%9B%86%E5%86%85%E5%AE%B9"><span class="toc-number">3.2.</span> <span class="toc-text">采集内容</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sentry-%E6%8E%A5%E5%85%A5%E5%AE%9E%E4%BE%8B"><span class="toc-number">4.</span> <span class="toc-text">Sentry 接入实例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-number">4.1.</span> <span class="toc-text">配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%8F%98%E9%87%8F"><span class="toc-number">4.2.</span> <span class="toc-text">设置变量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF%E7%A4%BA%E4%BE%8B"><span class="toc-number">4.2.1.</span> <span class="toc-text">设置全局变量用户信息示例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F"><span class="toc-number">4.2.2.</span> <span class="toc-text">设置局部变量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E7%BD%91%E7%BB%9C%E6%8A%A5%E9%94%99%E4%BF%A1%E6%81%AF%E7%A4%BA%E4%BE%8B"><span class="toc-number">4.2.3.</span> <span class="toc-text">设置局部变量网络报错信息示例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%85%E9%99%A4%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F"><span class="toc-number">4.2.4.</span> <span class="toc-text">清除全局变量</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E4%BC%A0%E6%97%A5%E5%BF%97%E4%BF%A1%E6%81%AF"><span class="toc-number">4.3.</span> <span class="toc-text">上传日志信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E4%BC%A0sourceMap"><span class="toc-number">4.4.</span> <span class="toc-text">上传sourceMap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%B8%E8%BD%BDsentry"><span class="toc-number">4.5.</span> <span class="toc-text">卸载sentry</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E5%B0%BE"><span class="toc-number">4.6.</span> <span class="toc-text">结尾</span></a></li></ol></li></ol></div></div></div><header class="post-bg" id="page-header" style="background-image: url(/img/index_img.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">mogii's blog</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tag/"><i class="fa-fw fas fa-tag"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/gallery/"><i class="fa-fw fas fa-image"></i><span> 图库</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">如何基于Sentry搭建一个前端异常监控系统</div></div><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-04-20T13:06:49.000Z" title="发表于 2021-04-20 21:06:49">2021-04-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-04-20T13:20:45.232Z" title="更新于 2021-04-20 21:20:45">2021-04-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%9F%BA%E5%BB%BA/">基建</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><p><a name="v2uXW"></a></p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>虽然在我们的项目运行上会有很多的测试流程，例如自测、提测回归测试及自动化测试。但是测试流程肯定无法保证100%覆盖所有操作场景，所以在用户的使用过程中仍会有一些问题暴露出来。<br />当线上用户出现问题，我们需要收到用户的一个反馈，才能去定位解决，这样导致我们的问题解决不够及时。<br />并且有些疑难杂症，我们无法无线复现定位，这时候我们需要得知用户的环境信息、操作信息等，以便于对问题进行排查。<br />基于以上两点考虑，我认为在大部分项目中都需要接入一个异常监控系统，来实现收集异常/日志信息、及时警告、展示统计信息等功能。<br /></p>
+<p><a name="V93OS"></a></p>
+<h2 id="异常系统的搭建"><a href="#异常系统的搭建" class="headerlink" title="异常系统的搭建"></a>异常系统的搭建</h2><p><a name="iAo2c"></a></p>
+<h3 id="为什么选择Sentry？"><a href="#为什么选择Sentry？" class="headerlink" title="为什么选择Sentry？"></a>为什么选择Sentry？</h3><ul>
+<li>免费</li>
+<li>Sentry可直接使用也可自行搭建</li>
+<li>兼容性强，基本不受语言限制，搭建一套系统可用于多个项目。</li>
+</ul>
+<p><a name="L4ou5"></a></p>
+<h3 id="Sentry-简介"><a href="#Sentry-简介" class="headerlink" title="Sentry 简介"></a>Sentry 简介</h3><blockquote>
+<p>Sentry’s application monitoring platform helps every developer<br>diagnose, fix, and optimize the performance of their code.</p>
+</blockquote>
+<p>Sentry的应用程序监视平台可帮助每个开发人员诊断，修复和优化其代码的性能。<br /></p>
+<p><a name="BWQj7"></a></p>
+<h3 id="Sentry-部署及使用"><a href="#Sentry-部署及使用" class="headerlink" title="Sentry 部署及使用"></a>Sentry 部署及使用</h3><p>官方提供安装方式是使用 <a target="_blank" rel="noopener" href="https://www.docker.com/">Docker</a> 和 <a target="_blank" rel="noopener" href="https://docs.docker.com/compose/">Docker Compose</a> 以及基于bash的安装和升级脚本。<br><a name="AlsLf"></a></p>
+<h4 id=""><a href="#" class="headerlink" title=""></a></h4><p><a name="HicwJ"></a></p>
+<h4 id="环境要求"><a href="#环境要求" class="headerlink" title="环境要求"></a>环境要求</h4><ul>
+<li>Docker 19.03.6+</li>
+<li>Compose 1.24.1+</li>
+<li>4 CPU Cores</li>
+<li>8 GB RAM</li>
+<li>20 GB Free Disk Space</li>
+<li>Python 3</li>
+</ul>
+<p>这里就不对环境的配置进行详细说明，一般找运营解决，想自己搭建的同学可以参考下以下文章。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_37745913/article/details/99966937">yum方式安装升级docker</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/lovefengruoqing/article/details/79284573">新装的CentOS 7安装python3</a><br><a name="iWn0U"></a><h4 id="-1"><a href="#-1" class="headerlink" title=""></a></h4><a name="tOOrS"></a><h4 id="部署步骤"><a href="#部署步骤" class="headerlink" title="部署步骤"></a>部署步骤</h4></li>
+</ul>
+<ol>
+<li>从 github 上获取 Sentry 最新代码。<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/getsentry/onpremise.git</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+<ol start="2">
+<li>进入 onpremise ，运行 install.sh 脚本。<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd onpremise</span><br><span class="line">./install.sh</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+<ol start="3">
+<li>运行<code>docker-compose up -d</code>以启动Sentry。</li>
+</ol>
+<p>按照默认配置构建后，Sentry 默认绑定 9000 端口，访问 <a target="_blank" rel="noopener" href="http://127.0.0.1:9000/">http://127.0.0.1:9000</a> 即可进入登录页面。<br /></p>
+<ol start="4">
+<li>打开页面填写信息后即可进入 Sentry 系统</li>
+</ol>
+<p><img src="https://cdn.nlark.com/yuque/0/2021/png/172063/1618751718414-7b0f858c-3f26-4d80-8942-7ba50ba53bd0.png#align=left&display=inline&height=613&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1226&originWidth=1360&size=774328&status=done&style=none&width=680" alt="image.png"><br /></p>
+<ol start="5">
+<li>自动发送邮箱配置，可以从上图配置，也可以从配置文件配置，下面为通过 config.yml 配置教程。</li>
+</ol>
+<p>打开 onpremise/sentry 下的 config.yml 文件，修改 Mail Server 配置内容。<br /><img src="https://cdn.nlark.com/yuque/0/2021/png/172063/1617677929532-7178b134-a483-4eca-95be-9b3cf7f53991.png#align=left&display=inline&height=255&margin=%5Bobject%20Object%5D&name=image.png&originHeight=255&originWidth=622&size=34186&status=done&style=none&width=622" alt="image.png"></p>
+<ul>
+<li>mail.backend：邮件发送方式；</li>
+<li>mail.host: 邮件发送域名 ，使用的哪个邮箱可以去该邮箱文档中找到 smtp 发送域名；</li>
+<li>mail.port: 邮件发送的端口号；</li>
+<li>mail.username：用于 smtp 邮箱的账号；</li>
+<li>mail.password：用于 smtp 邮箱的密码；</li>
+<li>mail.use-tls：是否使用 tls 安全协议，这里填写 true 或 false，和 use-ssl 配置互斥；</li>
+<li>mail.use-ssl：是否使用 ssl 安全协议，这里填写 true 或 false，和 use-tls 配置互斥；</li>
+<li>mail.from：收到邮件时的发送人名称；</li>
+</ul>
+<ol start="6">
+<li>通过配置文件修改邮箱后，重要运行 <code>docker-compose up -d</code> 更新 Sentry，如果更新失败则需要关闭后重新运行。<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker-compose down</span><br><span class="line">docker-compose build</span><br><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+<p><a name="U11GP"></a></p>
+<h4 id="Sentry-的使用"><a href="#Sentry-的使用" class="headerlink" title="Sentry 的使用"></a>Sentry 的使用</h4><p>通过链接进入系统后点右上角的 <code>New Project</code> 创建项目。<br /><img src="https://cdn.nlark.com/yuque/0/2021/png/172063/1618754295603-2b2d7797-02f1-49c5-98e6-e3a171e45682.png#align=left&display=inline&height=733&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1466&originWidth=2880&size=595986&status=done&style=none&width=1440" alt="image.png"><br />这里以 React 项目为例，建立一个 React 项目，按照页面提示即可在项目中注册 Sentry，对系项目执行中出现的异常进行捕捉。<br /><img src="https://cdn.nlark.com/yuque/0/2021/png/172063/1618754542097-6802927c-1486-4d7e-9445-848beb869e9f.png#align=left&display=inline&height=733&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1466&originWidth=2880&size=713394&status=done&style=none&width=1440" alt="image.png"><br /></p>
+<p><a name="Hmr0H"></a></p>
+<h3 id="小程序接入-Sentry"><a href="#小程序接入-Sentry" class="headerlink" title="小程序接入 Sentry"></a>小程序接入 Sentry</h3><p>Sentry 无官方 api 用于提供给小程序，好在有第三方根据提供的库，可使用原有 api 实现小程序端的异常监控。<br><a name="GlxIj"></a></p>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><ul>
+<li>npm install sentry-mina –save</li>
+<li>yarn add sentry-mina</li>
+<li>将 browser/sentry-mina.js 拷贝到项目中<br><a name="5JXHb"></a><h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> Sentry <span class="keyword">from</span> <span class="string">&quot;sentry-mina/browser/sentry-mina.js&quot;</span>;</span><br><span class="line"><span class="comment">// import * as Sentry from &quot;sentry-mina&quot;;</span></span><br><span class="line"><span class="comment">// config Sentry</span></span><br><span class="line">Sentry.init(&#123;</span><br><span class="line">  dsn: <span class="string">&#x27;&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment">// Set user information, as well as tags and further extras</span></span><br><span class="line">Sentry.configureScope(<span class="function"><span class="params">scope</span> =&gt;</span> &#123;</span><br><span class="line">  scope.setUser(&#123; <span class="attr">id</span>: <span class="string">&#x27;4711&#x27;</span> &#125;);</span><br><span class="line">  scope.setTag(<span class="string">&#x27;user_mode&#x27;</span>, <span class="string">&#x27;admin&#x27;</span>);</span><br><span class="line">  scope.setExtra(<span class="string">&#x27;battery&#x27;</span>, <span class="number">0.7</span>);</span><br><span class="line">  <span class="comment">// scope.clear();</span></span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// Add a breadcrumb for future events</span></span><br><span class="line">Sentry.addBreadcrumb(&#123;</span><br><span class="line">  message: <span class="string">&#x27;My Breadcrumb&#x27;</span>,</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// Capture exceptions, messages or manual events</span></span><br><span class="line">Sentry.captureMessage(<span class="string">&#x27;Hello, world!&#x27;</span>);</span><br><span class="line">Sentry.captureException(<span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">&#x27;Good bye&#x27;</span>));</span><br><span class="line">Sentry.captureEvent(&#123;</span><br><span class="line">  message: <span class="string">&#x27;Manual&#x27;</span>,</span><br><span class="line">  stacktrace: [</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  ],</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p><br />其他内容见文档 <a target="_blank" rel="noopener" href="https://developers.weixin.qq.com/community/develop/doc/000cecefb009a0a951c727d6c55406">Sentry 小程序 SDK</a>。<br /></p>
+<p><a name="QcJZx"></a></p>
+<h2 id="异常信息捕捉场景及采集内容"><a href="#异常信息捕捉场景及采集内容" class="headerlink" title="异常信息捕捉场景及采集内容"></a>异常信息捕捉场景及采集内容</h2><p>当我们在项目中触发异常后，在 issues 面板中即可看到最新的异常信息。点击进入后，可看到关于该异常的详细信息，如触发页面、操作栈、浏览器、设备等。<br /><img src="https://cdn.nlark.com/yuque/0/2021/png/172063/1618756350138-e533834f-c961-48d4-8dcd-025f60318c10.png#align=left&display=inline&height=169&margin=%5Bobject%20Object%5D&name=image.png&originHeight=338&originWidth=2428&size=92721&status=done&style=none&width=1214" alt="image.png"><br /><img src="https://cdn.nlark.com/yuque/0/2021/png/172063/1618756460070-4bf81442-4e36-4d96-8cb2-d5e83b2a3cc7.png#align=left&display=inline&height=729&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1458&originWidth=2210&size=555014&status=done&style=none&width=1105" alt="image.png"><br />但光有 js error 的收集是不够的，原始的上传信息也不足以分析问题。下面我们将从<strong>捕捉场景</strong>和<strong>采集内容</strong>这两方面进行分析。</p>
+<p><a name="Gc8tJ"></a></p>
+<h3 id="捕捉场景"><a href="#捕捉场景" class="headerlink" title="捕捉场景"></a>捕捉场景</h3><p>针对前端常见业务场景，总结了以下几个场景需要收集业务报错信息。</p>
+<ol>
+<li>接口错误</li>
+<li>网络错误</li>
+<li>js error 报错</li>
+<li>视频流异常状态</li>
+<li>iframe/webview 内部错误</li>
+</ol>
+<p>以上异常如果触发了 js error 或者 Promise.reject 并且没有被抛出，会被 Sentry 自动捕捉到，如果没有自动触发可手动 new Error 或 Promise.reject(error) 抛出异常，即可被 Sentry 收集。或者使用 captureMessage Api 收集运行日志。<br /></p>
+<p><a name="TaxWg"></a></p>
+<h3 id="采集内容"><a href="#采集内容" class="headerlink" title="采集内容"></a>采集内容</h3><p>尽管Sentry SDK会捕获所有未处理的异常和事务汇报至系统上，并且会记录产生异常的页面及设备信息。但是有这些信息是远远不够的，还需要额外的业务信息，用于更好的区别定位问题。下面是我对上报异常所需要收集的内容进行总结。</p>
+<p>异常信息：抛出异常的error信息，Sentry会自动捕捉。</p>
+<p>用户信息：用户的信息（登录名、id、level等），所属机构信息，所属公司信息。<br /><br><br />行为信息：用户的操作过程，例如登陆后进入xx页面，点击xx按钮，Sentry会自动捕捉。<br /><br><br />版本信息：运行项目的版本信息（测试、生产、灰度），以及版本号。<br /><br><br />设备信息：项目使用的平台，web项目包括运行设备信息及浏览器版本信息。小程序项目包括运行手机的手机型号、系统版本及微信版本。<br /><br><br />时间戳：记录异常发生时间，Sentry会自动捕捉。</p>
+<p>异常等级：根据 Sentry 文档分为以下几个等级。</p>
+<ul>
+<li>Critical</li>
+<li>Debug</li>
+<li>Error</li>
+<li>Fatal</li>
+<li>Info</li>
+<li>Log</li>
+<li>Warning</li>
+</ul>
+<p>平台信息：记录异常发生的项目。<br /></p>
+<p><a name="fTRyw"></a></p>
+<h2 id="Sentry-接入实例"><a href="#Sentry-接入实例" class="headerlink" title="Sentry 接入实例"></a>Sentry 接入实例</h2><p><a name="rI9E4"></a></p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>Sentry 配置应在应用程序的生命周期中尽早进行。完成此操作后，Sentry的JavaScript SDK会捕获所有未处理的异常和事务。通用前端项目配置代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Sentry.init(&#123;</span><br><span class="line">   	<span class="comment">// Sentry 项目的 dsn，可从项目设置中获取</span></span><br><span class="line">    dsn: <span class="string">&#x27;http://xxxxxxxxx&#x27;</span>,</span><br><span class="line">    <span class="comment">// 初始参数配置内容</span></span><br><span class="line">  	integrations: [<span class="keyword">new</span> Integrations.BrowserTracing()],</span><br><span class="line">		<span class="comment">// 触发异常后发送给 Sentry 的概率</span></span><br><span class="line">    tracesSampleRate: <span class="number">1.0</span>,</span><br><span class="line">    <span class="comment">// 控制应捕获的面包屑(行为栈)的总量</span></span><br><span class="line">    maxBreadcrumbs: <span class="number">20</span>,</span><br><span class="line">  	<span class="comment">// 版本信息</span></span><br><span class="line">    release: <span class="string">&#x27;测试@1.0.0&#x27;</span>,</span><br><span class="line">  	<span class="comment">// 环境信息</span></span><br><span class="line">    environment: <span class="string">&#x27;development&#x27;</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+<p><a name="4jQv4"></a></p>
+<h3 id="设置变量"><a href="#设置变量" class="headerlink" title="设置变量"></a>设置变量</h3><p>在 Sentry 中，可以使用 <code>set</code> + <code>tags</code>，<code>extra</code>，<code>contexts</code>，<code>user</code>，<code>level</code>，<code>fingerprint</code> 形式，设置变量。下面将简单介绍几种方式，详情使用方法可见<a target="_blank" rel="noopener" href="https://docs.sentry.io/platforms/javascript/enriching-events/context/#clearing-context">文档</a>。<br /></p>
+<p><a name="fJkvS"></a></p>
+<h4 id="设置全局变量用户信息示例"><a href="#设置全局变量用户信息示例" class="headerlink" title="设置全局变量用户信息示例"></a>设置全局变量用户信息示例</h4><p>捕捉异常还需要采集用户信息，在用户登录后需要通过 <code>setUser</code> 设置一下用户信息全局变量，如下所示。<code>setUser</code> 中的对象最多为两层，超过两层则会直接显示为 <code>object</code> 字符串。设置用户信息代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Sentry.setUser(&#123;</span><br><span class="line">    token: res.token,</span><br><span class="line">  	tenant: &#123;</span><br><span class="line">        code: res.agent.tenant.code,</span><br><span class="line">        name: res.agent.tenant.name,</span><br><span class="line">        _id: res.agent.tenant._id</span><br><span class="line">  	&#125;,</span><br><span class="line">  	orgAccount: &#123;</span><br><span class="line">        _id: res.agent.orgAccount._id,</span><br><span class="line">        orgName: res.agent.orgAccount.orgName</span><br><span class="line">  	&#125;,</span><br><span class="line">  	user: &#123;</span><br><span class="line">        _id: res.agent._id,</span><br><span class="line">        loginName: res.agent.loginName,</span><br><span class="line">        level: res.agent.agentRole.level,</span><br><span class="line">        roleName: res.agent.agentRole.roleName</span><br><span class="line">  	&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>设置全局变量后触发的 issue 中，可看到上传的用户数据。Sentry 设置的变量和 SessionStorage 存储的变量类似，当前页面关闭后将会清除这些数据。<br /><img src="https://cdn.nlark.com/yuque/0/2021/png/172063/1618838279345-3f22be3b-12ad-4a2a-bb24-280ad062318e.png#align=left&display=inline&height=390&margin=%5Bobject%20Object%5D&name=image.png&originHeight=488&originWidth=1323&size=67668&status=done&style=none&width=1057" alt="image.png"><br><a name="xypAn"></a><br><br /><br><a name="NCZAH"></a></p>
+<h4 id="设置局部变量"><a href="#设置局部变量" class="headerlink" title="设置局部变量"></a>设置局部变量</h4><p><code>captureException</code> 是我常用的一种设置局部变量并上传报错的方式，<code>Sentry.captureException(err[, obj])</code> 第一个参数为抛出的异常，第二个参数可附加错误信息。<br />第二个参数为对象，key 值可为 <code>tags</code>，<code>extra</code>，<code>contexts</code>，<code>user</code>，<code>level</code>，<code>fingerprint</code> 这6种，对应的  value 内的对象最多为两层。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Sentry.captureException(error, &#123;</span><br><span class="line">    contexts: &#123;</span><br><span class="line">        message: &#123;</span><br><span class="line">            <span class="comment">// √</span></span><br><span class="line">                a: <span class="number">1</span>,</span><br><span class="line">            <span class="comment">// √</span></span><br><span class="line">            b: &#123; <span class="attr">b</span>: <span class="number">1</span> &#125;,</span><br><span class="line">            <span class="comment">// × 超过两层，界面将无法显示详细数据</span></span><br><span class="line">            c: &#123; </span><br><span class="line">                c: &#123; <span class="attr">d</span>: <span class="number">1</span> &#125;, <span class="attr">d</span>: <span class="number">2</span> &#125;</span><br><span class="line">        &#125;</span><br><span class="line">  	&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+<p><a name="bU1fF"></a></p>
+<h4 id="设置局部变量网络报错信息示例"><a href="#设置局部变量网络报错信息示例" class="headerlink" title="设置局部变量网络报错信息示例"></a>设置局部变量网络报错信息示例</h4><p>根据目前 axios 示例，对网络请求出错的局部数据进行收集，代码示例：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Sentry.captureException(error, &#123;</span><br><span class="line">    contexts: &#123;</span><br><span class="line">      	message: &#123;</span><br><span class="line">            baseURL: error.response.config.baseURL,</span><br><span class="line">            data: error.response.config.data,</span><br><span class="line">            method: error.response.config.method,</span><br><span class="line">            status: error.response.status,</span><br><span class="line">            statusText: error.response.statusText,</span><br><span class="line">            responseData: <span class="built_in">JSON</span>.stringify(error.response.data),</span><br><span class="line">     	 &#125;</span><br><span class="line">  	&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+<p><a name="xeV7I"></a></p>
+<h4 id="清除全局变量"><a href="#清除全局变量" class="headerlink" title="清除全局变量"></a>清除全局变量</h4><p>在用户退出登录后需要清除该用户的用户信息，有以下两种方式。<br /></p>
+<ol>
+<li><p>通过设置为空，可以清除设置过的数据。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Sentry.setUser();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过 <code>scope.clear()</code> 清除全局变量。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Sentry.configureScope(<span class="function"><span class="params">scope</span> =&gt;</span> scope.clear()); 				<span class="comment">// 清除所有全局变量</span></span><br><span class="line">Sentry.configureScope(<span class="function"><span class="params">scope</span> =&gt;</span> scope.setUser(<span class="literal">null</span>));  <span class="comment">// 清除 user 变量</span></span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+<p><a name="TwVip"></a></p>
+<h3 id="上传日志信息"><a href="#上传日志信息" class="headerlink" title="上传日志信息"></a>上传日志信息</h3><p>有时我们不仅仅要收集异常信息，还需要在页面中打 log 来收集页面运行数据，这时可以用 <code>Sentry.captureMessage(err[, obj])</code> api，进行传输日志。使用方法与 <code>captureException</code> 一致，建议将 level 设置为 Info，便于与异常区分开来，避免触发我们设置的异常警报。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Sentry.captureMessage(<span class="string">&#x27;Something went fundamentally wrong&#x27;</span>, &#123;</span><br><span class="line">  	contexts: &#123;</span><br><span class="line">        text: &#123;</span><br><span class="line">            hahah: <span class="number">22</span></span><br><span class="line">        &#125;</span><br><span class="line">  	&#125;,</span><br><span class="line">  	level: Sentry.Severity.Info</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+<p><a name="riS64"></a></p>
+<h3 id="上传sourceMap"><a href="#上传sourceMap" class="headerlink" title="上传sourceMap"></a>上传sourceMap</h3><p>上传sourcemap<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_34996214/article/details/112278553">参考</a><br /></p>
+<p><a name="q9YcT"></a></p>
+<h3 id="卸载sentry"><a href="#卸载sentry" class="headerlink" title="卸载sentry"></a>卸载sentry</h3><p>如何卸载sentry<a target="_blank" rel="noopener" href="https://segmentfault.com/q/1010000038449410">参考</a><br /> </p>
+<h3 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h3><p>以上所述就是作者给大家介绍的基于 Sentry 搭建前端异常监控系统的过程，希望对大家有所帮助，如果大家有任何疑问请给我留言，我会及时回复大家的！</p>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">mogii</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/posts/%E5%A6%82%E4%BD%95%E5%9F%BA%E4%BA%8ESentry%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%89%8D%E7%AB%AF%E5%BC%82%E5%B8%B8%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F/">http://example.com/posts/如何基于Sentry搭建一个前端异常监控系统/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">mogii's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tag/%E5%89%8D%E7%AB%AF/">前端</a><a class="post-meta__tags" href="/tag/%E5%9F%BA%E5%BB%BA/">基建</a></div><div class="post_share"><div class="social-share" data-image="/img/index_img.png" data-sites="facebook,twitter,weibo,wechat,qq,qzone"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/posts/%E7%94%A8vscode%E6%9D%A5%E8%B0%83%E8%AF%95js%E6%96%87%E4%BB%B6%E5%90%A7/"><img class="next-cover" src="/img/index_img.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">用vscode来调试js文件吧</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/记录踩到的坑&知识点-小程序/" title="记录踩到的坑&知识点-小程序"><img class="cover" src="/img/index_img.png"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-11-06</div><div class="title">记录踩到的坑&知识点-小程序</div></div></a></div><div><a href="/posts/Taro3升级指南/" title="Taro3升级指南"><img class="cover" src="https://img13.360buyimg.com/ling/jfs/t1/134284/22/3425/2134519/5efb3a62Ef5a42a26/a2c2c9a6d62cd391.png"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-11-15</div><div class="title">Taro3升级指南</div></div></a></div><div><a href="/posts/如何在微信小程序内使用外部字体/" title="如何在微信小程序内使用外部字体"><img class="cover" src="/img/index_img.png"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-11-25</div><div class="title">如何在微信小程序内使用外部字体</div></div></a></div><div><a href="/posts/在Typescript中使用第三方库/" title="在Typescript中使用第三方库"><img class="cover" src="/img/index_img.png"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-11-26</div><div class="title">在Typescript中使用第三方库</div></div></a></div><div><a href="/posts/如何给你的Taro小程序项目加上TS/" title="如何给你的Taro小程序项目加上TS"><img class="cover" src="/img/index_img.png"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-11-26</div><div class="title">如何给你的Taro小程序项目加上TS</div></div></a></div><div><a href="/posts/记录踩到的坑&知识点-js/" title="记录踩到的坑&知识点-js/css"><img class="cover" src="/img/index_img.png"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-01</div><div class="title">记录踩到的坑&知识点-js/css</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></article></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By mogii</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><section id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk({
+      clientID: '0f750c40d5e215737595',
+      clientSecret: 'b885a8b4c691f04dcb7b4188cbfd7f5e941d8541',
+      repo: 'bolg-comments',
+      owner: 'mogiihu',
+      admin: ['mogiihu'],
+      id: 'ef5f7a1b0ff6ba95b07f2c3e09390e37',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: true,
+      updateCountCallback: commentCount
+    })
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    $.getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js', initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script><script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script></div></body></html>
