@@ -1,0 +1,18 @@
+{
+    "sourceFile": "src/content/posts/2020-11-26-在Typescript中使用第三方库/index.md",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1756112760795,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1756112760795,
+            "name": "Commit-0",
+            "content": "---\ntitle: 在Typescript中使用第三方库\npublished: 2020-11-26\ndescription: ''\nimage: ''\ntags: [前端, Typescript]\ncategory: 'Typescript'\ndraft: false \nlang: ''\n---\n\n### 在 Typescript 中使用第三方库\n\n当我们在 TS 项目中直接使用第三方库中变量会报错，\n\n```js\nwx.setNavigationBarTitle({ title: \"标题\" });\n// 这里的 wx 会提示：Cannot find name 'wx'.\n```\n\n#### 声明文件\n\n这是因为在 ts ts 并不知道这个 `wx` 是用来干什么的，通常情况下需要我们去定义它的使用方法。\n\n```js\ndeclare wx:(arguments: object) => any\n```\n\n这些声明通常我们会统一放在一个文件中，这个文件叫做**声明文件**。\n\n声明文件的命名方式是 `xx.d.ts` , ts 在编译的时候会默认编译这类文件，使得在所有 ts 文件能使用声明文件中声明的变量、方法。\n\n这样的定义方式显而易见很麻烦，所以有大量 的第三方库来帮我们解决这个问题，这类第三方库一般以 `@type/**` 这样的方式命名。上面提到的 `wx` 报错问题就可以用 `@types/wechat-miniprogram` 来解决。\n\n#### Type Search\n\n[Type Search](https://www.typescriptlang.org/dt/search?search=)中收录了这些声明文件，我们可以进行查找并安装需要的声明文件。\n\n![Type Search](./img1.png)\n"
+        }
+    ]
+}

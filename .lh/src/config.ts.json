@@ -1,0 +1,18 @@
+{
+    "sourceFile": "src/config.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1756111566173,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1756111566173,
+            "name": "Commit-0",
+            "content": "import type {\n\tExpressiveCodeConfig,\n\tLicenseConfig,\n\tNavBarConfig,\n\tProfileConfig,\n\tSiteConfig,\n} from \"./types/config\";\nimport { LinkPreset } from \"./types/config\";\n\nexport const siteConfig: SiteConfig = {\n\ttitle: \"mogii's blog\",\n\tsubtitle: \"欢迎光临\",\n\tlang: \"zh_CN\", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.\n\tthemeColor: {\n\t\thue: 250, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345\n\t\tfixed: true, // Hide the theme color picker for visitors\n\t},\n\tbanner: {\n\t\tenable: true,\n\t\tsrc: \"assets/images/banner.png\", // Relative to the /src directory. Relative to the /public directory if it starts with '/'\n\t\tposition: \"center\", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default\n\t\tcredit: {\n\t\t\tenable: false, // Display the credit text of the banner image\n\t\t\ttext: \"\", // Credit text to be displayed\n\t\t\turl: \"\", // (Optional) URL link to the original artwork or artist's page\n\t\t},\n\t},\n\ttoc: {\n\t\tenable: false, // Display the table of contents on the right side of the post\n\t\tdepth: 2, // Maximum heading depth to show in the table, from 1 to 3\n\t},\n\tfavicon: [\n\t\t// Leave this array empty to use the default favicon\n\t\t{\n\t\t  src: '/favicon/favicon.png',    // Path of the favicon, relative to the /public directory\n\t\t  theme: 'light',              // (Optional) Either 'light' or 'dark', set only if you have different favicons for light and dark mode\n\t\t  sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes\n\t\t}\n\t],\n};\n\nexport const navBarConfig: NavBarConfig = {\n\tlinks: [\n\t\tLinkPreset.Home,\n\t\tLinkPreset.Archive,\n\t\t// LinkPreset.About,\n\t],\n};\n\nexport const profileConfig: ProfileConfig = {\n\tavatar: \"assets/images/avatar.png\", // Relative to the /src directory. Relative to the /public directory if it starts with '/'\n\tname: \"mogii\",\n\tbio: '高级前端工程师',\n\tbio2: 'Email: ccyu1126@foxmail.com',\n\tlinks: [\n\t\t// {\n\t\t// \tname: \"Twitter\",\n\t\t// \ticon: \"fa6-brands:twitter\", // Visit https://icones.js.org/ for icon codes\n\t\t// \t// You will need to install the corresponding icon set if it's not already included\n\t\t// \t// `pnpm add @iconify-json/<icon-set-name>`\n\t\t// \turl: \"https://twitter.com\",\n\t\t// },\n\t\t// {\n\t\t// \tname: \"Steam\",\n\t\t// \ticon: \"fa6-brands:steam\",\n\t\t// \turl: \"https://store.steampowered.com\",\n\t\t// },\n\t\t{\n\t\t\tname: \"GitHub\",\n\t\t\ticon: \"fa6-brands:github\",\n\t\t\turl: \"https://github.com/mogiihu\",\n\t\t},\n\t],\n};\n\nexport const licenseConfig: LicenseConfig = {\n\tenable: true,\n\tname: \"CC BY-NC-SA 4.0\",\n\turl: \"https://creativecommons.org/licenses/by-nc-sa/4.0/\",\n};\n\nexport const expressiveCodeConfig: ExpressiveCodeConfig = {\n\t// Note: Some styles (such as background color) are being overridden, see the astro.config.mjs file.\n\t// Please select a dark theme, as this blog theme currently only supports dark background color\n\ttheme: \"github-dark\",\n};\n"
+        }
+    ]
+}
