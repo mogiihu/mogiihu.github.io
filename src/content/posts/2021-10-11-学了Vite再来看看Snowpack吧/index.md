@@ -3,7 +3,7 @@ title: 学了Vite再来看看Snowpack吧
 published: 2021-10-11
 description: ''
 image: ''
-tags: [基建, 前端]
+tags: [基建, 前端, Snowpack]
 category: '基建'
 draft: false 
 lang: ''
