@@ -1,9 +1,44 @@
 # About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
 
-::github{repo="saicaca/fuwari"}
+你好！欢迎来到我的技术博客。
+我是一名专注于现代 Web 技术栈的全栈开发者。在这里，我记录自己的技术实践、学习心得与思考总结。
 
-> ### Sources of images used in this site
-> - [Unsplash](https://unsplash.com/)
-> - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
-> - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
+### 技术领域技术领域
+我的技术栈覆盖前后端开发多个领域，主要专注于：
+> - **🧩全栈开发**  
+>   - 熟悉 Next.js 全栈开发，能够独立设计和实现前后端一体化的 Web 应用
+> - **💻前端开发**  
+>   - 熟练掌握 JavaScript、CSS 和 HTML，具备独立开发复杂前端项目的能力
+>   - 深入理解 React、Vue 和 Taro 等主流框架及其生态，擅长基于技术栈设计和搭建可维护、可扩展的前端架构
+>   - 熟悉 Tailwind CSS 和 Framer Motion，能高效实现响应式界面和流畅交互动画
+> - ⚙️ 工程化与工具
+>   - 熟悉 Webpack 和 Vite 等现代化构建工具，具备独立搭建和优化前端工程化脚手架的经验
+>   - 善于运用 TypeScript 类型系统提升代码质量和开发效率
+> - **🛠 后端与运维**
+>   - 了解 Node.js 与 PHP，可独立完成服务端接口开发及数据库操作
+>   - 了解 Linux 和 Shell，能使用 Node.js 和 Linux 环境开发自动化工具
+> - **💻团队与项目管理**  
+>   - 拥有团队领导经验，曾带领多人团队完成中型项目开发，具备项目管理和协作推进的能力。
+>
+
+### 为什么写博客？
+
+我相信技术写作不仅是分享，更是深化理解的过程。在这里，我希望能：
+
+- 整理和沉淀知识
+- 与更多开发者交流想法
+- 为开源和技术社区贡献一份力量
+  
+### 找到我
+
+如果你对文章有任何疑问或建议，欢迎通过以下方式联系我：
+
+- 📧 邮箱：ccyu1126@foxmail.com
+- 💬 微信：ccyu1126 
+
+::github{repo="mogiihu/mogiihu.github.io"}
+
+
+感谢你的阅读，期待与你交流！  
+
+<span style="float:right">—— mogiihu</span>
