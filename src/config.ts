@@ -26,16 +26,16 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 	toc: {
-		enable: false, // Display the table of contents on the right side of the post
-		depth: 2, // Maximum heading depth to show in the table, from 1 to 3
+		enable: true, // Display the table of contents on the right side of the post
+		depth: 3, // Maximum heading depth to show in the table, from 1 to 3
 	},
 	favicon: [
 		// Leave this array empty to use the default favicon
 		{
-		  src: '/favicon/favicon.png',    // Path of the favicon, relative to the /public directory
-		  theme: 'light',              // (Optional) Either 'light' or 'dark', set only if you have different favicons for light and dark mode
-		  sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
-		}
+			src: "/favicon/favicon.png", // Path of the favicon, relative to the /public directory
+			theme: "light", // (Optional) Either 'light' or 'dark', set only if you have different favicons for light and dark mode
+			sizes: "32x32", // (Optional) Size of the favicon, set only if you have favicons of different sizes
+		},
 	],
 };
 
@@ -50,8 +50,8 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 	name: "mogii",
-	bio: '高级前端工程师',
-	bio2: 'Email: ccyu1126@foxmail.com',
+	bio: "高级前端工程师",
+	bio2: "Email: ccyu1126@foxmail.com",
 	links: [
 		// {
 		// 	name: "Twitter",
