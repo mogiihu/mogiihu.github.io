@@ -25,7 +25,7 @@ npm install @trpc/server @trpc/client
 ## 2. 创建路由器
 首先，让我们初始化 tRPC router。
 
-```plain
+```tsx title="src\utils\trpc.ts"
 import { initTRPC } from "@trpc/server";
 
 const t = initTRPC.create();
@@ -33,9 +33,9 @@ export const router = t.router;
 export const procedure = t.procedure;
 ```
 
-接下来，我们将初始化主路由器实例（这里用 getNameRouter 举例）。
+接下来，我们将初始化主路由器实例（这里用 appRouter 举例）。
 
-```plain
+```tsx title="src\utils\trpc.ts"
 import { initTRPC } from "@trpc/server";
 
 const t = initTRPC.create();
@@ -43,7 +43,7 @@ export const router = t.router;
 export const procedure = t.procedure;
 
 export const appRouter = router({
-  app: procedure.query(async () => {
+  getUser: procedure.query(async () => {
     return { name: "xiaohu" };
   }),
 });
@@ -62,7 +62,7 @@ tRPC 作为一个 API 框架，需要集成到现有的服务器环境中运行�
 
 下面我们通过 `fetch`handler 创建 api route。
 
-```typescript
+```typescript title="src\app\api\trpc\[...trpc]\route.ts"
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "@/utils/trpc";
 import { NextRequest } from "next/server";
@@ -85,7 +85,7 @@ export { handler as GET, handler as POST };
 ### 4.1 创建 tRpc 客户端。
 **创建 tRPC 客户端的主要目的是为了我们你能在前端（如 React 组件中）像调用本地函数一样，安全、方便地调用后端 API**。手动构造 HTTP 请求，比如 `fetch('/api/user/123')`。
 
-```typescript
+```typescript title="src\utils\api.ts"
 import type { AppRouter } from "@/utils/trpc";
 
 export const trpcClient = createTRPCClient<AppRouter>({
@@ -98,7 +98,7 @@ export const trpcClient = createTRPCClient<AppRouter>({
 ```
 
 ### 4.2 在客户端页面中调用 api
-```tsx
+```tsx title="src\app\dashboard\page.tsx"
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -110,7 +110,7 @@ import { trpcClient } from "@/utils/api";
 export default function Home() {
   useEffect(() => {
     // 2. 调用trpc的 app api
-    trpcClient.app.query();
+    trpcClient.getUser.query();
   }, []);
   return (
     <div className="h-screen flex items-center justify-center">
@@ -125,7 +125,7 @@ export default function Home() {
 }
 ```
 
-这时打开页面可以看到我们调用 getName api 发送的请求，及返回数据。
+这时打开页面可以看到我们调用 getUser api 发送的请求，及返回数据。
 
 ![](./image1.png)
 
@@ -136,8 +136,8 @@ tRPC handler 可以向我们的 api router 传递 Context，和 express middlewa
 
 首先创建 createContextInner 函数，用于获取上下文。
 
-```typescript
-// 封装 createContextInner 
+```typescript title="src\utils\trpc.ts"
+// 创建 createContextInner 
 export async function createContextInner() {
   const session = await getServerSession();
   if (!session) {
@@ -154,9 +154,9 @@ export async function createContextInner() {
 }
 ```
 
-给我们的trpc handler route 设置 createContext。
+给我们的 tRPc handler route 设置 createContext。
 
-```tsx
+```tsx title="src\app\api\trpc\[...trpc]\route.ts
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { createContextInner, appRouter } from "@/utils/trpc";
 import { NextRequest } from "next/server";
@@ -175,10 +175,9 @@ export { handler as GET, handler as POST };
 ```
 
 调用此 api 时就可以在 createContextInner 进行 context 处理。
-
 下面是 middleware 使用方法。
 
-```typescript
+```typescript title="src\utils\trpc.ts"
 // 1. 创建 middleware
 const middleware = t.middleware(async (opts) => {
   const start = Date.now();
@@ -209,7 +208,7 @@ const checkedProcedure = procedure.use(checkedLoginMiddleware);
 
 export const appRouter = router({
   // 3. 更换路由上的 procedure
-  app: loggedProcedure.query(async ({ ctx }) => {
+  getUser: loggedProcedure.query(async ({ ctx }) => {
     console.log("%c Line:38 🍏 ctx", "color:#7f2b82", ctx);
     return { ...ctx };
   }),
@@ -219,8 +218,7 @@ export const appRouter = router({
   }),
 });
 ```
-
-
+访问页面触发调用 api ，可以看到控制台输出 context log及 middleware 内的log。
 
 # tRPC 在 React 客户端集成
 在 React 项目中，可以使用  **TanStack Query **进行客户端集成**。**
@@ -228,7 +226,7 @@ export const appRouter = router({
 **TanStack Query 的核心作用是，它专门负责高效地管理、缓存和同步你的应用中的【异步数据】（尤其是来自服务器端的数据）。**
 
 ## 设置 tRpc context
-```typescript
+```typescript title="src\utils\api.ts"
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "@/utils/trpc";
 import { createTRPCContext } from "@trpc/tanstack-react-query";
@@ -249,7 +247,7 @@ export const { useTRPC, useTRPCClient } = trpcContext;
 
 然后，创建一个 **`TRPCProvider`客户端组件**，并将页面包裹在`TRPCProvider`中。
 
-```tsx
+```tsx title="src\app\TRPCProvider.tsx"
 "use client";
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -266,8 +264,9 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
   );
 }
 ```
+在 `app/layout.tsx` 中, 用 `TRPCProvider` 组件包裹子组件。
 
-```tsx
+```tsx title="src\app\layout.tsx"
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -293,7 +292,8 @@ export default function RootLayout({
 ```
 
 ## 在 client 调用 api 
-```tsx
+使用 tanstack 的 useQuery hook 发起一个 tRPC 查询请求，useQuery 返回的对象中，包含该请求的 data/isLoading/error 等状态。
+```tsx title="src\app\dashboard\page.tsx"
 "use client";
 import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/utils/api";
@@ -303,7 +303,7 @@ export default function Home() {
   // 获取已配置好的 tRPC 客户端实例和工具函数
   // 这个 useTRPC 必须在使用了 TRPCProvider 包裹的 客户端 组件内使用
   const trpc = useTRPC();
-  // 使用 React Query 的 useQuery hook 发起一个 tRPC 查询请求
+  // 使用 tanstack 的 useQuery hook 发起一个 tRPC 查询请求
   // trpc.hello.queryOptions() 生成一个包含查询键(key)和查询函数(queryFn)的选项对象
   // useQuery 返回的对象中，包含该请求的 data/isLoading/error 等状态
   const { data, isLoading, error } = useQuery(trpc.hello.queryOptions());
@@ -313,7 +313,6 @@ export default function Home() {
     </div>
   );
 }
-
 ```
 # 服务器端调用
 当我们从 server component 在请求 api 时，由于  server component 和 api 在同一服务器上，这时我们期望无需重新建立 http 连接，可以直接调用服务端函数。
@@ -324,7 +323,7 @@ export default function Home() {
 
  创建一个 tRPC `createCallerFactory()` ，它基于已定义的应用路由器(appRouter)，这个createCallerFactory 可以用来创建能够直接调用路由器中所有过程的调用器实例。
 
-```tsx
+```tsx src\utils\trpc.ts
 const t = initTRPC.create();
 const { router, procedure, createCallerFactory } = t;
 
@@ -334,7 +333,7 @@ export const createCaller = createCallerFactory(appRouter);
 
 在服务端，通过 createCaller 实例 caller 对服务端api进行调用。
 
-```jsx
+```jsx title="src\app\dashboard\page.tsx"
 import { Button } from "@/components/ui/button";
 import { createContextInner, createCaller } from "@/utils/trpc";
 

@@ -10,12 +10,12 @@ lang: ''
 ---
 
 # NextAuth 身份验证功能详解
-### 一句话概括
+## 一句话概括
 **NextAuth.js 是一个专门为 Next.js 应用程序设计的、功能完整且易于集成的身份认证库。**
 
 它帮你处理用户登录、注册、登出等一系列繁琐且容易出错的认证流程，让你能快速、安全地为你的 Next.js 应用添加认证功能。
 
-### 它解决了什么问题？
+## 它解决了什么问题？
 想象一下你要为你的网站添加一个“使用 GitHub 登录”的功能，你需要：
 
 1. 去 GitHub 注册一个 OAuth 应用，拿到 `Client ID` 和 `Client Secret`。
@@ -31,13 +31,13 @@ lang: ''
 
 **NextAuth.js 的作用就是把这整个复杂的过程封装起来，你只需要进行简单的配置，它就能帮你自动完成所有这些步骤。**
 
-### 简单的示例
+## 简单的示例
 通过固定的用户名和密码，验证下是否可以通过 `next-auth` 实现登录。
 
 1. `npm install next-auth` 安装 next-auth，当前安装版本为 `^4.24.11`。  
 2. 在 `/app/api/auth/[...nextauth]/route.ts` 下添加路由处理程序。
 
-```typescript
+```typescript title="src\app\api\auth\[...nextauth]\route.ts"
 import NextAuth from "next-auth";
 
 const handler = NextAuth({
@@ -49,7 +49,8 @@ export { handler as GET, handler as POST };
 
 2. 通过一小段代码配置 Credentials 登录，验证 nextAuth。
 
-```typescript
+```typescript title="src\app\api\auth\[...nextauth]\route.ts"
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 const authOptions = {
@@ -80,13 +81,15 @@ const authOptions = {
     }),
   ],
 };
+
+const handler = NextAuth(authOptions);
 ```
 
 1. 打开 [http://localhost:3000/api/auth/signin](http://localhost:3000/api/auth/signin) 可跳转至 `next-auth`为我们提供的默认 `signin` 页面。![](./image1.png)
 2. 输入用户名和密码验证是否符合登录逻辑吧。
 
 # 通过 NextAuth 实现 gitlab 登录完整步骤指南
-#### 在 GitLab 上创建应用程序
+## 1. 在 GitLab 上创建应用程序
 1. **登录你的 GitLab 账户**。
 2. **打开 Applications** 。
 
@@ -101,11 +104,11 @@ const authOptions = {
 4. 点击 **Save application**。
 5. 保存成功后，页面会显示你的 **Application ID** 和 **Secret**。**将它们复制下来**！！，配置到文件中。
 
-#### 在 Next.js 项目中配置 NextAuth.js
+## 2. 在 Next.js 项目中配置 NextAuth.js
 1. **配置 GitLab Provider**  
 将以下代码复制到 `[...nextauth]/routes.js` 文件中，并填入你的 GitLab Application ID 和 Secret。
 
-```javascript
+```javascript title="src\app\api\auth\[...nextauth]\route.ts"
 const handler = NextAuth({
   providers: [
     // 1. 配置 GitLab 作为认证提供程序
@@ -129,41 +132,18 @@ const handler = NextAuth({
 
 ![](./image3.png)
 
-#### 使用 `useSession()` 检查是否登陆成功
+## 3. 使用 `useSession()` 检查是否登陆成功
 1. 文档 [https://next-auth.js.org/getting-started/client#usesession](https://next-auth.js.org/getting-started/client#usesession)
-2. 因为 useSession 只能用在客户端组件中，创建 `userInfo.tsx`客户端组件使用 useSession。
+2. 因为 useSession 只能用在客户端组件中，创建 `userInfo.tsx` **客户端组件**使用 useSession。
 
-```javascript
+```javascript title="src\app\userInfo.tsx"
+"use client";
 "use client";
 import { useSession, SessionProvider } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { redirect } from "next/navigation";
 
 export function Component() {
-  const { data: session, status } = useSession();
-  console.log("%c Line:6 🍅 session", "color:#42b983", session);
-  return (
-    <div className="h-screen flex items-center justify-center">
-      <div>Signed in as {session.user.name}</div>
-    </div>
-  );
-}
-
-export default function SessionProviderUserInfo() {
-  return (
-    // useSession 需包裹在 SessionProvider 内使用
-    <SessionProvider>
-      <Component />
-    </SessionProvider>
-  );
-}
-```
-
-3. 在 page.ts 中使用 `<UserInfo>`验证用户信息。
-
-```javascript
-// pages/index.js
-import { useSession, signIn, signOut } from "next-auth/react";
-
-export default function HomePage() {
   // useSession Hook 获取会话数据和状态
   const { data: session, status } = useSession();
   const loading = status === "loading";
@@ -179,33 +159,50 @@ export default function HomePage() {
           {/* 已登录状态 */}
           <p>欢迎，{session.user.name}！</p>
           <p>你的邮箱：{session.user.email}</p>
-          <button onClick={() => signOut()}>退出登录</button>
         </>
       ) : (
         <>
           {/* 未登录状态 */}
           <p>请先登录</p>
-          {/* 调用 signIn('gitlab') 会重定向到 GitLab 登录页面 */}
-          <button onClick={() => signIn("gitlab")}>
+          <Button onClick={() => redirect("/api/auth/signin")}>
             使用 GitLab 登录
-          </button>
+          </Button>
         </>
       )}
     </div>
   );
 }
+
+export default function SessionProviderUserInfo() {
+  return (
+    // useSession 需包裹在 SessionProvider 内使用
+    <SessionProvider>
+      <Component />
+    </SessionProvider>
+  );
+}
+
 ```
 
-#### 通过 adapter 实现自动存储功能
+3. 在 page.ts 中使用 `<UserInfo>`验证用户信息。打开页面后，如登录可看到用户信息。
+
+
+# 通过 Drizzle Adapter 实现自动存储功能
+## 核心概念
+Drizzle Adapter 是 Drizzle ORM 生态系统中的核心组件，它的主要功能是作为 Drizzle ORM 与各种数据库（如 PostgreSQL, MySQL, SQLite 等）之间的“翻译官”和“连接桥”。
+
+Drizzle ORM 本身提供了一套统一的、类型安全的 JavaScript/TypeScript API 来定义模式（Schema）和构建查询（Query）。而适配器的作用，就是将这套统一的 API 翻译成不同数据库特有的 SQL 方言，并处理底层的连接和通信细节。
+
+## 使用步骤
 1. 安装 `drizzle-adapter`。
 
-```typescript
+```bash
 pnpm install @auth/drizzle-adapter
 ```
 
-2. 更新 schema
+2. 根据 [文档示例的 PostgreSQL schema](https://authjs.dev/getting-started/adapters/drizzle?_gl=1*wyve8o*_gcl_au*NTAyNzc1NTI0LjE3NTY3MDM1NTUuMjAzOTM5MTQ5NC4xNzU2NzIzNDMyLjE3NTY3MjQ0MTI.#schemas) 更新我们项目中的 schema 
 
-```typescript
+```typescript title="src\server\db\schema.ts"
 import {
   boolean,
   timestamp,
@@ -300,31 +297,31 @@ export const authenticators = pgTable(
 
 ```
 
-3. 运行 `npx drizzle-kit push`创建数据库。
-4. 运行 `npx drizzle-kit studio`打开GUI界面，可看到数据库创建成功。
+3. 运行 `npx drizzle-kit push` 创建数据库。
+4. 运行 `npx drizzle-kit studio` 打开GUI界面，可看到数据库创建成功。
 5. 但是数据库此时无数据，需要我们给 `nextauth` 集成 `adpter`。打开 `src\app\api\auth\[...nextauth]\route.ts`添加以下代码。
 
-```typescript
-...
+```typescript title="src\app\api\auth\[...nextauth]\route.ts"
+// ...
 import { db } from "@/server/db/db";
 const handler = NextAuth({
   adapter: DrizzleAdapter(db),
-  ...
+// ...
 });
 ```
 
-6. 打开 [http://localhost:3000/api/auth/signin](http://localhost:3000/api/auth/signin) 重新登陆后，查看 [https://local.drizzle.studio/](https://local.drizzle.studio/)，可看到在表中已经有数据生成了~
+1. 打开 http://localhost:3000/api/auth/signin 重新登陆后，查看 https://local.drizzle.studio/ 可视化界面，可看到在表中已经有数据生成了~
 
 ![](./image4.png)
 
 # 通过 getServerSession 在服务端获取 Session
-前面我们使用的 `useSession`是在客户端获取 session，接下来演示如何通过 `getServerSession`在服务端获取 session。
+前面我们使用的 `useSession` 是在客户端获取 session，接下来演示如何通过 `getServerSession` 在服务端获取 session。
 
 文档：[https://next-auth.js.org/configuration/nextjs#in-app-router](https://next-auth.js.org/configuration/nextjs#in-app-router)
 
 创建 `src\server\auth\index.ts`文件，放置 `authOptions` 及 `getServerSession`。
 
-```typescript
+```typescript title="src\server\auth\index.ts"
 import GitlabProvider from "next-auth/providers/gitlab";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/server/db/db";
@@ -355,7 +352,7 @@ export const getServerSession = function () {
 
 修改 `src\app\api\auth\[...nextauth]\route.ts` 文件。
 
-```typescript
+```typescript title="src\app\api\auth\[...nextauth]\route.ts"
 import NextAuth from "next-auth";
 import { authOptions } from "@/server/auth";
 
@@ -367,21 +364,21 @@ export { handler as GET, handler as POST };
 
 在 page 中使用 `gerServerSession`。
 
-```tsx
+```tsx title="src\app\page.tsx"
 import { getServerSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 
-...
+// ...
   const session = await getServerSession();
   console.log("%c Line:26 🍇 session", "color:#ffdd4d", session);
 
   if (!session?.user) {
     redirect("/api/auth/signin");
   }
-...
+// ...
 ```
 
-打开页面，如果自动登录成功可以清除浏览器缓存进行验证，因为前文我们登录 gitlab 后储存了 session 信息在postgres 内，所以不要忘了打开docker postgres镜像哦~
+打开页面，如果自动登录成功可以清除浏览器缓存进行验证，因为前文我们登录 gitlab 后储存了 session 信息在 postgreSQL 内，所以不要忘了打开 docker postgreSQL 镜像哦~
 
 清除缓存后，可以看到此时无登录信息，跳转到 signin 页面。
 
