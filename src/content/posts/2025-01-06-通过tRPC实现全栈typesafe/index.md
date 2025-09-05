@@ -2,7 +2,7 @@
 title: 通过 tRPC 实现全栈 typesafe
 published: 2025-01-06
 description: ''
-image: ''
+image: './image0.png'
 tags: [next]
 category: 'next'
 draft: false 
@@ -10,7 +10,7 @@ lang: ''
 ---
 
 # 介绍
-tRPC 在 Next.js 中用于创建类型安全的API，它允许客户端直接调用服务器端的函数（API），并享受完整的 TypeScript 类型推断。
+[tRPC](https://trpc.io/) 在 Next.js 中用于创建类型安全的API，它允许客户端直接调用服务器端的函数（API），并享受完整的 TypeScript 类型推断。
 
 + 实现客户端与服务端的 api 同步，可以帮我们在客户端同步server api，并且同步调用 server api。
 + 使用 tRPC 不用关心请求方式，tRPC 全都封装好了，使用的是 tRPC 的 api client。
