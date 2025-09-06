@@ -34,7 +34,6 @@
 如果你对文章有任何疑问或建议，欢迎通过以下方式联系我：
 
 - 📧 邮箱：ccyu1126@foxmail.com
-- 💬 微信：ccyu1126 
 
 ::github{repo="mogiihu/mogiihu.github.io"}
 

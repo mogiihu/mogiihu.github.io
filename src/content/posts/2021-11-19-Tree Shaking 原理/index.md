@@ -8,9 +8,6 @@ category: '原理'
 draft: false 
 lang: ''
 ---
-
-![](./shaking.gif)
-
 # Tree Shaking：消除无用代码的优化技术
 
 Tree Shaking 是一种基于 ES Module 规范的**无用代码消除（Dead Code Elimination）** 技术。
