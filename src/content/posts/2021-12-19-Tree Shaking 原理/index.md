@@ -1,6 +1,6 @@
 ---
 title: Tree Shaking 原理
-published: 2021-11-19
+published: 2021-12-19
 description: ''
 image: './shaking.gif'
 tags: [Webpack, 前端]
