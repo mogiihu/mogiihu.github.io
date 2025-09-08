@@ -2,7 +2,7 @@
 title: 解决 Canvas 画板画线“锯齿感”“毛边”问题
 published: 2022-03-18
 description: ''
-image: ''
+image: './image4.png'
 tags: [React, Javascript, canvas]
 category: 'Javascript'
 draft: false 
@@ -117,8 +117,6 @@ export default function Page() {
 
 
 ## 2. 锯齿感造成原因
-
-### 造成原因分析
 
 我们在 canvas 上绘制4个点，并用线链接他们。
 
