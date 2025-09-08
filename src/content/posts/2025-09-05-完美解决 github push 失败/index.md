@@ -14,7 +14,7 @@ fatal: unable to access ‘https://github.com/.../.git‘: Failed to connect to 
 ### 通过配置hosts解决
 host 来源：https://raw.hellogithub.com/hosts
 复制该文件所有内容到 hosts 文件中。
-
+> github ip 最新地址：https://www.ipaddress.com/website/github.com/
 ### 各系统 hosts 文件位置与修改指南
 
 hosts 文件在不同操作系统中的存放路径有所差异，具体如下：
